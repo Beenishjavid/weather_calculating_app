@@ -1,43 +1,49 @@
-import axios from 'axios';
+import axios from "axios";
 
 const getEnvValue = (name) => {
-  if (typeof process !== 'undefined' && process.env) {
-    return process.env[name] || '';
+  if (typeof process !== "undefined" && process.env) {
+    return process.env[name] || "";
   }
 
-  return '';
+  return "";
 };
 
-export const API_KEY = getEnvValue('REACT_APP_WEATHER_API_KEY') || getEnvValue('VITE_WEATHER_API_KEY') || '';
+export const API_KEY =
+  getEnvValue("REACT_APP_WEATHER_API_KEY") ||
+  getEnvValue("VITE_WEATHER_API_KEY") ||
+  "";
 export const BASE_URL =
-  getEnvValue('REACT_APP_WEATHER_API_URL') ||
-  getEnvValue('VITE_WEATHER_API_URL') ||
-  'https://api.openweathermap.org/data/2.5';
+  getEnvValue("REACT_APP_WEATHER_API_URL") ||
+  getEnvValue("VITE_WEATHER_API_URL") ||
+  "https://api.openweathermap.org/data/2.5";
 
 export const weatherApi = axios.create({
   baseURL: BASE_URL,
   timeout: 12000,
 });
 
-export const formatWeatherApiError = (error, fallbackMessage = 'Unable to fetch weather data right now.') => {
+export const formatWeatherApiError = (
+  error,
+  fallbackMessage = "Unable to fetch weather data right now.",
+) => {
   if (!error) {
     return fallbackMessage;
   }
 
   if (error.response?.status === 404) {
-    return 'City not found. Please check the spelling and try again.';
+    return "City not found. Please check the spelling and try again.";
   }
 
   if (error.response?.status === 401) {
-    return 'Invalid API key. Please check your OpenWeatherMap configuration.';
+    return "Invalid API key. Please check your OpenWeatherMap configuration.";
   }
 
-  if (error.message === 'Network Error' || error.code === 'ERR_NETWORK') {
-    return 'Network error. Please check your connection and try again.';
+  if (error.message === "Network Error" || error.code === "ERR_NETWORK") {
+    return "Network error. Please check your connection and try again.";
   }
 
   if (error.response?.status >= 500) {
-    return 'The weather service is temporarily unavailable. Please try again later.';
+    return "The weather service is temporarily unavailable. Please try again later.";
   }
 
   return error.response?.data?.message || error.message || fallbackMessage;
@@ -46,7 +52,7 @@ export const formatWeatherApiError = (error, fallbackMessage = 'Unable to fetch 
 const requestWeather = async (endpoint, params = {}) => {
   if (!API_KEY) {
     throw new Error(
-      'API key not configured. Please add REACT_APP_WEATHER_API_KEY or VITE_WEATHER_API_KEY to your environment.'
+      "API key not configured. Please add REACT_APP_WEATHER_API_KEY or VITE_WEATHER_API_KEY to your environment.",
     );
   }
 
@@ -60,43 +66,53 @@ const requestWeather = async (endpoint, params = {}) => {
   return response.data;
 };
 
-export const fetchCurrentWeather = async (city, unit = 'metric') => {
+export const fetchCurrentWeather = async (city, unit = "metric") => {
   const cityName = city?.trim();
 
   if (!cityName) {
-    throw new Error('Please enter a valid city name.');
+    throw new Error("Please enter a valid city name.");
   }
 
-  return requestWeather('/weather', { q: cityName, units: unit });
+  return requestWeather("/weather", { q: cityName, units: unit });
 };
 
-export const fetchForecast = async (city, unit = 'metric') => {
+export const fetchForecast = async (city, unit = "metric") => {
   const cityName = city?.trim();
 
   if (!cityName) {
-    throw new Error('Please enter a valid city name.');
+    throw new Error("Please enter a valid city name.");
   }
 
-  return requestWeather('/forecast', { q: cityName, units: unit });
+  return requestWeather("/forecast", { q: cityName, units: unit });
 };
 
-export const fetchWeatherByCoordinates = async (lat, lon, unit = 'metric') => {
-  if (lat === null || lon === null || Number.isNaN(Number(lat)) || Number.isNaN(Number(lon))) {
-    throw new Error('Location coordinates are invalid.');
+export const fetchWeatherByCoordinates = async (lat, lon, unit = "metric") => {
+  if (
+    lat === null ||
+    lon === null ||
+    Number.isNaN(Number(lat)) ||
+    Number.isNaN(Number(lon))
+  ) {
+    throw new Error("Location coordinates are invalid.");
   }
 
-  return requestWeather('/weather', { lat, lon, units: unit });
+  return requestWeather("/weather", { lat, lon, units: unit });
 };
 
-export const fetchForecastByCoordinates = async (lat, lon, unit = 'metric') => {
-  if (lat === null || lon === null || Number.isNaN(Number(lat)) || Number.isNaN(Number(lon))) {
-    throw new Error('Location coordinates are invalid.');
+export const fetchForecastByCoordinates = async (lat, lon, unit = "metric") => {
+  if (
+    lat === null ||
+    lon === null ||
+    Number.isNaN(Number(lat)) ||
+    Number.isNaN(Number(lon))
+  ) {
+    throw new Error("Location coordinates are invalid.");
   }
 
-  return requestWeather('/forecast', { lat, lon, units: unit });
+  return requestWeather("/forecast", { lat, lon, units: unit });
 };
 
-export const fetchWeatherBundle = async (city, unit = 'metric') => {
+export const fetchWeatherBundle = async (city, unit = "metric") => {
   const [current, forecast] = await Promise.all([
     fetchCurrentWeather(city, unit),
     fetchForecast(city, unit),
@@ -108,8 +124,10 @@ export const fetchWeatherBundle = async (city, unit = 'metric') => {
   };
 };
 
-export const fetchMultipleCities = async (cities, unit = 'metric') => {
-  const validCities = [...new Set(cities.filter(Boolean).map((city) => city.trim()))];
+export const fetchMultipleCities = async (cities, unit = "metric") => {
+  const validCities = [
+    ...new Set(cities.filter(Boolean).map((city) => city.trim())),
+  ];
 
   if (!validCities.length) {
     return [];
@@ -127,7 +145,7 @@ export const fetchMultipleCities = async (cities, unit = 'metric') => {
           error: formatWeatherApiError(error, `Unable to load ${city}.`),
         };
       }
-    })
+    }),
   );
 
   return results;
